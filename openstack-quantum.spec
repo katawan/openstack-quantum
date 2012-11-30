@@ -1,17 +1,17 @@
 #
-# This is 2012.2 folsom final
+# This is 2013.2 grizzly
 #
 
 Name:		openstack-quantum
-Version:	2012.2
-Release:	1%{?dist}
+Version:        2013.1
+Release:        1%{?dist}
 Summary:	Virtual network service for OpenStack (quantum)
 
 Group:		Applications/System
 License:	ASL 2.0
 URL:		http://launchpad.net/quantum/
 
-Source0:	https://launchpad.net/quantum/folsom/%{version}/+download/quantum-%{version}.tar.gz
+Source0:        quantum-2013.1.tar.gz
 Source1:	quantum.logrotate
 Source2:	quantum-sudoers
 Source4:	quantum-server-setup
@@ -26,6 +26,7 @@ Source13:	quantum-ryu-agent.service
 Source14:	quantum-nec-agent.service
 Source15:	quantum-dhcp-agent.service
 Source16:	quantum-l3-agent.service
+Source17:	quantum-metadata-agent.service
 
 BuildArch:	noarch
 
@@ -228,6 +229,7 @@ install -p -D -m 755 bin/quantum-debug %{buildroot}%{_bindir}/quantum-debug
 install -p -D -m 755 bin/quantum-dhcp-agent %{buildroot}%{_bindir}/quantum-dhcp-agent
 install -p -D -m 755 bin/quantum-dhcp-agent-dnsmasq-lease-update %{buildroot}%{_bindir}/quantum-dhcp-agent-dnsmasq-lease-update
 install -p -D -m 755 bin/quantum-l3-agent %{buildroot}%{_bindir}/quantum-l3-agent
+install -p -D -m 755 bin/quantum-metadata-agent %{buildroot}%{_bindir}/quantum-metadata-agent
 install -p -D -m 755 bin/quantum-linuxbridge-agent %{buildroot}%{_bindir}/quantum-linuxbridge-agent
 install -p -D -m 755 bin/quantum-nec-agent %{buildroot}%{_bindir}/quantum-nec-agent
 install -p -D -m 755 bin/quantum-netns-cleanup %{buildroot}%{_bindir}/quantum-netns-cleanup
@@ -270,6 +272,7 @@ install -p -D -m 644 %{SOURCE13} %{buildroot}%{_unitdir}/quantum-ryu-agent.servi
 install -p -D -m 644 %{SOURCE14} %{buildroot}%{_unitdir}/quantum-nec-agent.service
 install -p -D -m 644 %{SOURCE15} %{buildroot}%{_unitdir}/quantum-dhcp-agent.service
 install -p -D -m 644 %{SOURCE16} %{buildroot}%{_unitdir}/quantum-l3-agent.service
+install -p -D -m 644 %{SOURCE17} %{buildroot}%{_unitdir}/quantum-metadata-agent.service
 
 # Setup directories
 install -d -m 755 %{buildroot}%{_sharedstatedir}/quantum
@@ -306,6 +309,9 @@ if [ $1 -eq 0 ] ; then
     /bin/systemctl stop quantum-dhcp-agent.service > /dev/null 2>&1 || :
     /bin/systemctl --no-reload disable quantum-l3-agent.service > /dev/null 2>&1 || :
     /bin/systemctl stop quantum-l3-agent.service > /dev/null 2>&1 || :
+
+    /bin/systemctl --no-reload disable quantum-metadata-agent.service > /dev/null 2>&1 || :
+    /bin/systemctl stop quantum-metadata-agent.service > /dev/null 2>&1 || :
 fi
 
 
@@ -316,6 +322,7 @@ if [ $1 -ge 1 ] ; then
     /bin/systemctl try-restart quantum-server.service >/dev/null 2>&1 || :
     /bin/systemctl try-restart quantum-dhcp-agent.service >/dev/null 2>&1 || :
     /bin/systemctl try-restart quantum-l3-agent.service >/dev/null 2>&1 || :
+    /bin/systemctl try-restart quantum-metadata-agent.service >/dev/null 2>&1 || :
 fi
 
 
@@ -392,6 +399,8 @@ fi
 %{_bindir}/quantum-dhcp-setup
 %{_bindir}/quantum-l3-agent
 %{_bindir}/quantum-l3-setup
+%{_bindir}/quantum-metadata-agent
+%{_bindir}/quantum-ns-metadata-proxy
 %{_bindir}/quantum-netns-cleanup
 %{_bindir}/quantum-node-setup
 %{_bindir}/quantum-rootwrap
@@ -399,6 +408,7 @@ fi
 %{_bindir}/quantum-server-setup
 %{_unitdir}/quantum-dhcp-agent.service
 %{_unitdir}/quantum-l3-agent.service
+%{_unitdir}/quantum-metadata-agent.service
 %{_unitdir}/quantum-server.service
 %dir %{_sysconfdir}/quantum
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/api-paste.ini
@@ -520,6 +530,9 @@ fi
 
 
 %changelog
+* Fri Nov 30 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
+- Add quantum metadata agent service and files.
+
 * Fri Sep 28 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-1
 - Update to folsom final
 - Require python-quantumclient >= 1:2.1.1
