@@ -247,8 +247,8 @@ install -d -m 755 %{buildroot}%{_sysconfdir}/quantum
 mv %{buildroot}/usr/etc/quantum/* %{buildroot}%{_sysconfdir}/quantum
 chmod 640  %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini
 
-# Install files missing from setup.py (https://bugs.launchpad.net/quantum/+bug/1050045)
-install -p -D -m 640 etc/l3_agent.ini %{buildroot}%{_sysconfdir}/quantum/l3_agent.ini
+# Until we get this fixed: https://review.openstack.org/#/c/17362/
+install -p -D -m 640 etc/metadata_agent.ini %{buildroot}%{_sysconfdir}/quantum/metadata_agent.ini
 
 # Configure agents to use quantum-rootwrap
 for f in %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini %{buildroot}%{_sysconfdir}/quantum/*_agent.ini; do
@@ -414,6 +414,7 @@ fi
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/api-paste.ini
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/dhcp_agent.ini
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/l3_agent.ini
+%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/metadata_agent.ini
 %config(noreplace) %{_sysconfdir}/quantum/policy.json
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/quantum.conf
 %config(noreplace) %{_sysconfdir}/quantum/rootwrap.conf
@@ -530,6 +531,9 @@ fi
 
 
 %changelog
+* Mon Dec 3 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
+- Adds etc/metadata_agent.ini to the RPM.
+
 * Fri Nov 30 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
 - Add quantum metadata agent service and files.
 
