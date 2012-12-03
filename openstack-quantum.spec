@@ -229,6 +229,7 @@ install -p -D -m 755 bin/quantum-debug %{buildroot}%{_bindir}/quantum-debug
 install -p -D -m 755 bin/quantum-dhcp-agent %{buildroot}%{_bindir}/quantum-dhcp-agent
 install -p -D -m 755 bin/quantum-dhcp-agent-dnsmasq-lease-update %{buildroot}%{_bindir}/quantum-dhcp-agent-dnsmasq-lease-update
 install -p -D -m 755 bin/quantum-l3-agent %{buildroot}%{_bindir}/quantum-l3-agent
+install -p -D -m 755 bin/quantum-ns-metadata-proxy %{buildroot}%{_bindir}/quantum-ns-metadata-proxy
 install -p -D -m 755 bin/quantum-metadata-agent %{buildroot}%{_bindir}/quantum-metadata-agent
 install -p -D -m 755 bin/quantum-linuxbridge-agent %{buildroot}%{_bindir}/quantum-linuxbridge-agent
 install -p -D -m 755 bin/quantum-nec-agent %{buildroot}%{_bindir}/quantum-nec-agent
@@ -533,6 +534,7 @@ fi
 %changelog
 * Mon Dec 3 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
 - Adds etc/metadata_agent.ini to the RPM.
+- Install bin/quantum-ns-metadata-proxy.
 
 * Fri Nov 30 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
 - Add quantum metadata agent service and files.
