@@ -1,5 +1,5 @@
 #
-# This is 2013.2 grizzly
+# This is 2013.1 grizzly
 #
 
 Name:		openstack-quantum
@@ -82,6 +82,22 @@ Quantum provides an API to dynamically request and configure virtual
 networks.
 
 This package contains the quantum Python library.
+
+
+%package -n openstack-quantum-bigswitch
+Summary:	Quantum Big Switch plugin
+Group:		Applications/System
+
+Requires:	openstack-quantum = %{version}-%{release}
+
+
+%description -n openstack-quantum-bigswitch
+Quantum provides an API to dynamically request and configure virtual
+networks.
+
+This package contains the quantum plugin that implements virtual
+networks using the FloodLight Openflow Controller or the Big Switch
+Networks Controller.
 
 
 %package -n openstack-quantum-cisco
@@ -248,8 +264,8 @@ install -d -m 755 %{buildroot}%{_sysconfdir}/quantum
 mv %{buildroot}/usr/etc/quantum/* %{buildroot}%{_sysconfdir}/quantum
 chmod 640  %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini
 
-# Until we get this fixed: https://review.openstack.org/#/c/17362/
-install -p -D -m 640 etc/metadata_agent.ini %{buildroot}%{_sysconfdir}/quantum/metadata_agent.ini
+# Install bigswitch plugin conf file missing from setup.py
+install -p -D -m 640 etc/quantum/plugins/bigswitch/restproxy.ini %{buildroot}%{_sysconfdir}/quantum/plugins/bigswitch/restproxy.ini
 
 # Configure agents to use quantum-rootwrap
 for f in %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini %{buildroot}%{_sysconfdir}/quantum/*_agent.ini; do
@@ -444,6 +460,7 @@ fi
 %exclude %{python_sitelib}/quantum/extensions/_pprofiles.py*
 %exclude %{python_sitelib}/quantum/extensions/qos.py*
 %exclude %{python_sitelib}/quantum/extensions/_qos_view.py*
+%exclude %{python_sitelib}/quantum/plugins/bigswitch
 %exclude %{python_sitelib}/quantum/plugins/cisco
 %exclude %{python_sitelib}/quantum/plugins/linuxbridge
 %exclude %{python_sitelib}/quantum/plugins/metaplugin
@@ -452,6 +469,14 @@ fi
 %exclude %{python_sitelib}/quantum/plugins/openvswitch
 %exclude %{python_sitelib}/quantum/plugins/ryu
 %{python_sitelib}/quantum-%%{version}-*.egg-info
+
+
+%files -n openstack-quantum-bigswitch
+%doc LICENSE
+%doc quantum/plugins/bigswitch/README
+%{python_sitelib}/quantum/plugins/bigswitch
+%dir %{_sysconfdir}/quantum/plugins/bigswitch
+%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/bigswitch/*.ini
 
 
 %files -n openstack-quantum-cisco
@@ -538,6 +563,19 @@ fi
 
 * Fri Nov 30 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
 - Add quantum metadata agent service and files.
+
+* Wed Dec  5 2012 Robert Kukura <rkukura@redhat.com> - 2013.1-0.1.g1
+- Update to grizzly milestone 1
+- Require python-quantumclient >= 1:2.1.10
+- Remove unneeded rpc control_exchange patch
+- Add bigswitch plugin as sub-package
+- Work around bigswitch conf file missing from setup.py
+
+* Mon Dec  3 2012 Robert Kukura <rkukura@redhat.com> - 2012.2.1-1
+- Update to folsom stable 2012.2.1
+- Turn off PrivateTmp for dhcp_agent and l3_agent (bug 872689)
+- Add upstream patch: Fix rpc control_exchange regression.
+- Remove workaround for missing l3_agent.ini
 
 * Fri Sep 28 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-1
 - Update to folsom final
