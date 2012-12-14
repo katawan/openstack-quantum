@@ -557,11 +557,9 @@ fi
 
 
 %changelog
-* Mon Dec 3 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
+* Mon Dec 6 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
 - Adds etc/metadata_agent.ini to the RPM.
 - Install bin/quantum-ns-metadata-proxy.
-
-* Fri Nov 30 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
 - Add quantum metadata agent service and files.
 
 * Wed Dec  5 2012 Robert Kukura <rkukura@redhat.com> - 2013.1-0.1.g1
