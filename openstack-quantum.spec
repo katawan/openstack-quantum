@@ -251,6 +251,7 @@ install -p -D -m 755 bin/quantum-linuxbridge-agent %{buildroot}%{_bindir}/quantu
 install -p -D -m 755 bin/quantum-nec-agent %{buildroot}%{_bindir}/quantum-nec-agent
 install -p -D -m 755 bin/quantum-netns-cleanup %{buildroot}%{_bindir}/quantum-netns-cleanup
 install -p -D -m 755 bin/quantum-openvswitch-agent %{buildroot}%{_bindir}/quantum-openvswitch-agent
+install -p -D -m 755 bin/quantum-ovs-cleanup %{buildroot}%{_bindir}/quantum-ovs-cleanup
 install -p -D -m 755 bin/quantum-rootwrap %{buildroot}%{_bindir}/quantum-rootwrap
 install -p -D -m 755 bin/quantum-ryu-agent %{buildroot}%{_bindir}/quantum-ryu-agent
 install -p -D -m 755 bin/quantum-server %{buildroot}%{_bindir}/quantum-server
@@ -519,6 +520,7 @@ fi
 %doc LICENSE
 %doc quantum/plugins/openvswitch/README
 %{_bindir}/quantum-openvswitch-agent
+%{_bindir}/quantum-ovs-cleanup
 %{_unitdir}/quantum-openvswitch-agent.service
 %{python_sitelib}/quantum/plugins/openvswitch
 %{_datarootdir}/quantum/rootwrap/openvswitch-plugin.filters
@@ -557,6 +559,9 @@ fi
 
 
 %changelog
+* Mon Dec 26 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
+- Add new quantum-ovs-cleanup binary to openvswitch package.
+
 * Mon Dec 6 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
 - Adds etc/metadata_agent.ini to the RPM.
 - Install bin/quantum-ns-metadata-proxy.
