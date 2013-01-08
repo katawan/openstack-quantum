@@ -411,6 +411,7 @@ fi
 %files
 %doc LICENSE
 %doc README
+%{_bindir}/quantum-db-manage
 %{_bindir}/quantum-debug
 %{_bindir}/quantum-dhcp-agent
 %{_bindir}/quantum-dhcp-agent-dnsmasq-lease-update
@@ -559,6 +560,9 @@ fi
 
 
 %changelog
+* Tue Jan 8 2013 Dan Prince <dprince@redhat.com> - 2013.2-1
+- Add /usr/bin/quantum-db-manage.
+
 * Mon Dec 26 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
 - Add new quantum-ovs-cleanup binary to openvswitch package.
 
