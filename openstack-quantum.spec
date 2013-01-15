@@ -266,6 +266,9 @@ install -d -m 755 %{buildroot}%{_sysconfdir}/quantum
 mv %{buildroot}/usr/etc/quantum/* %{buildroot}%{_sysconfdir}/quantum
 chmod 640  %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini
 
+# remove hyperv plugin ini file
+rm -f %{buildroot}%{_sysconfdir}/quantum/plugins/hyperv/hyperv_quantum_plugin.ini
+
 # Install bigswitch plugin conf file missing from setup.py
 install -p -D -m 640 etc/quantum/plugins/bigswitch/restproxy.ini %{buildroot}%{_sysconfdir}/quantum/plugins/bigswitch/restproxy.ini
 
@@ -561,6 +564,9 @@ fi
 
 
 %changelog
+* Tue Jan 15 2013 Dan Prince <dprince@redhat.com> - 2013.2-1
+- remove hyperv plugin ini file.
+
 * Sun Jan 13 2013 Dan Prince <dprince@redhat.com> - 2013.2-1
 - Add python-extras dependency.
 
