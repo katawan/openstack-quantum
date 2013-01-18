@@ -73,7 +73,6 @@ Requires:	python-quantumclient >= 1:2.1.1
 Requires:	python-routes
 Requires:	python-sqlalchemy
 Requires:	python-webob
-Requires:	python-extras
 Requires:	sudo
 
 
@@ -566,9 +565,6 @@ fi
 %changelog
 * Tue Jan 15 2013 Dan Prince <dprince@redhat.com> - 2013.2-1
 - remove hyperv plugin ini file.
-
-* Sun Jan 13 2013 Dan Prince <dprince@redhat.com> - 2013.2-1
-- Add python-extras dependency.
 
 * Tue Jan 8 2013 Dan Prince <dprince@redhat.com> - 2013.2-1
 - Add /usr/bin/quantum-db-manage.
