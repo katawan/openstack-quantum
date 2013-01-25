@@ -457,12 +457,7 @@ fi
 %doc README
 %{python_sitelib}/quantum
 %exclude %{python_sitelib}/quantum/extensions/_credential_view.py*
-%exclude %{python_sitelib}/quantum/extensions/portprofile.py*
-%exclude %{python_sitelib}/quantum/extensions/novatenant.py*
 %exclude %{python_sitelib}/quantum/extensions/credential.py*
-%exclude %{python_sitelib}/quantum/extensions/_novatenant_view.py*
-%exclude %{python_sitelib}/quantum/extensions/multiport.py*
-%exclude %{python_sitelib}/quantum/extensions/_pprofiles.py*
 %exclude %{python_sitelib}/quantum/extensions/qos.py*
 %exclude %{python_sitelib}/quantum/extensions/_qos_view.py*
 %exclude %{python_sitelib}/quantum/plugins/bigswitch
@@ -488,12 +483,7 @@ fi
 %doc LICENSE
 %doc quantum/plugins/cisco/README
 %{python_sitelib}/quantum/extensions/_credential_view.py*
-%{python_sitelib}/quantum/extensions/portprofile.py*
-%{python_sitelib}/quantum/extensions/novatenant.py*
 %{python_sitelib}/quantum/extensions/credential.py*
-%{python_sitelib}/quantum/extensions/_novatenant_view.py*
-%{python_sitelib}/quantum/extensions/multiport.py*
-%{python_sitelib}/quantum/extensions/_pprofiles.py*
 %{python_sitelib}/quantum/extensions/qos.py*
 %{python_sitelib}/quantum/extensions/_qos_view.py*
 %{python_sitelib}/quantum/plugins/cisco
@@ -563,16 +553,19 @@ fi
 
 
 %changelog
-* Tue Jan 15 2013 Dan Prince <dprince@redhat.com> - 2013.2-1
+* Fri Jan 25 2013 Dan Prince <dprince@redhat.com> - 2013.1-1.g3
+- Sync with latest Cisco plugin changes.
+
+* Tue Jan 15 2013 Dan Prince <dprince@redhat.com> - 2013.1-1.g2
 - remove hyperv plugin ini file.
 
-* Tue Jan 8 2013 Dan Prince <dprince@redhat.com> - 2013.2-1
+* Tue Jan 8 2013 Dan Prince <dprince@redhat.com> - 2013.1-1.g2
 - Add /usr/bin/quantum-db-manage.
 
-* Mon Dec 26 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
+* Mon Dec 26 2012 Dan Prince <dprince@redhat.com> - 2013.1-1.g2
 - Add new quantum-ovs-cleanup binary to openvswitch package.
 
-* Mon Dec 6 2012 Dan Prince <dprince@redhat.com> - 2013.2-1
+* Mon Dec 6 2012 Dan Prince <dprince@redhat.com> - 2013.1-1.g2
 - Adds etc/metadata_agent.ini to the RPM.
 - Install bin/quantum-ns-metadata-proxy.
 - Add quantum metadata agent service and files.
