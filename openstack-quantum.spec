@@ -490,12 +490,7 @@ fi
 %doc README
 %{python_sitelib}/quantum
 %exclude %{python_sitelib}/quantum/extensions/_credential_view.py*
-%exclude %{python_sitelib}/quantum/extensions/portprofile.py*
-%exclude %{python_sitelib}/quantum/extensions/novatenant.py*
 %exclude %{python_sitelib}/quantum/extensions/credential.py*
-%exclude %{python_sitelib}/quantum/extensions/_novatenant_view.py*
-%exclude %{python_sitelib}/quantum/extensions/multiport.py*
-%exclude %{python_sitelib}/quantum/extensions/_pprofiles.py*
 %exclude %{python_sitelib}/quantum/extensions/qos.py*
 %exclude %{python_sitelib}/quantum/extensions/_qos_view.py*
 %exclude %{python_sitelib}/quantum/plugins/bigswitch
@@ -530,12 +525,7 @@ fi
 %doc LICENSE
 %doc quantum/plugins/cisco/README
 %{python_sitelib}/quantum/extensions/_credential_view.py*
-%{python_sitelib}/quantum/extensions/portprofile.py*
-%{python_sitelib}/quantum/extensions/novatenant.py*
 %{python_sitelib}/quantum/extensions/credential.py*
-%{python_sitelib}/quantum/extensions/_novatenant_view.py*
-%{python_sitelib}/quantum/extensions/multiport.py*
-%{python_sitelib}/quantum/extensions/_pprofiles.py*
 %{python_sitelib}/quantum/extensions/qos.py*
 %{python_sitelib}/quantum/extensions/_qos_view.py*
 %{python_sitelib}/quantum/plugins/cisco
@@ -615,7 +605,8 @@ fi
 
 %changelog
 * Sat Feb 16 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
-- Add brocade and plumgrid packages.
+- Add Brocade and Plumgrid packages.
+- Update files in Cisco package.
 
 * Thu Feb 15 2013 Robert Kukura <rkukura@redhat.com> - 2013.1-0.3.g2
 - Update to grizzly milestone 2
