@@ -292,6 +292,9 @@ install -d -m 755 %{buildroot}%{_sysconfdir}/quantum
 mv %{buildroot}/usr/etc/quantum/* %{buildroot}%{_sysconfdir}/quantum
 chmod 640  %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini
 
+# remove hyperv plugin ini file
+rm -f %{buildroot}%{_sysconfdir}/quantum/plugins/hyperv/hyperv_quantum_plugin.ini
+
 # Install bigswitch plugin conf file missing from setup.py
 install -p -D -m 640 etc/quantum/plugins/bigswitch/restproxy.ini %{buildroot}%{_sysconfdir}/quantum/plugins/bigswitch/restproxy.ini
 
@@ -607,6 +610,7 @@ fi
 * Sat Feb 16 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
 - Add Brocade and Plumgrid packages.
 - Update files in Cisco package.
+- Remove hyperv quantum plugin.
 
 * Thu Feb 15 2013 Robert Kukura <rkukura@redhat.com> - 2013.1-0.3.g2
 - Update to grizzly milestone 2
