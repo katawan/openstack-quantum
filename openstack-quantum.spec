@@ -105,6 +105,16 @@ networks using the FloodLight Openflow Controller or the Big Switch
 Networks Controller.
 
 
+%package -n openstack-quantum-brocade
+Summary:        Quantum Brocade plugin
+Group:          Applications/System
+
+Requires:       openstack-quantum = %{version}-%{release}
+
+%description -n openstack-quantum-brocade
+This package contains the Quantum Brocade plugin.
+
+
 %package -n openstack-quantum-cisco
 Summary:	Quantum Cisco plugin
 Group:		Applications/System
@@ -167,6 +177,16 @@ networks.
 
 This package contains the quantum plugin that implements virtual
 networks using Open vSwitch.
+
+
+%package -n openstack-quantum-plumgrid
+Summary:        Quantum Plumgrid plugin
+Group:          Applications/System
+
+Requires:       openstack-quantum = %{version}-%{release}
+
+%description -n openstack-quantum-plumgrid
+This package contains the Quantum Brocade plugin.
 
 
 %package -n openstack-quantum-ryu
@@ -479,12 +499,14 @@ fi
 %exclude %{python_sitelib}/quantum/extensions/qos.py*
 %exclude %{python_sitelib}/quantum/extensions/_qos_view.py*
 %exclude %{python_sitelib}/quantum/plugins/bigswitch
+%exclude %{python_sitelib}/quantum/plugins/brocade
 %exclude %{python_sitelib}/quantum/plugins/cisco
 %exclude %{python_sitelib}/quantum/plugins/linuxbridge
 %exclude %{python_sitelib}/quantum/plugins/metaplugin
 %exclude %{python_sitelib}/quantum/plugins/nec
 %exclude %{python_sitelib}/quantum/plugins/nicira
 %exclude %{python_sitelib}/quantum/plugins/openvswitch
+%exclude %{python_sitelib}/quantum/plugins/plumgrid
 %exclude %{python_sitelib}/quantum/plugins/ryu
 %{python_sitelib}/quantum-%%{version}-*.egg-info
 
@@ -495,6 +517,13 @@ fi
 %{python_sitelib}/quantum/plugins/bigswitch
 %dir %{_sysconfdir}/quantum/plugins/bigswitch
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/bigswitch/*.ini
+
+
+%files -n openstack-quantum-brocade
+%doc LICENSE
+%{python_sitelib}/quantum/plugins/brocade
+%dir %{_sysconfdir}/quantum/plugins/brocade
+%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/brocade/*.ini
 
 
 %files -n openstack-quantum-cisco
@@ -546,6 +575,14 @@ fi
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/openvswitch/*.ini
 
 
+%files -n openstack-quantum-plumgrid
+%doc LICENSE
+%doc quantum/plugins/plumgrid/README
+%{python_sitelib}/quantum/plugins/plumgrid
+%dir %{_sysconfdir}/quantum/plugins/plumgrid
+%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/plumgrid/*.ini
+
+
 %files -n openstack-quantum-ryu
 %doc LICENSE
 %doc quantum/plugins/ryu/README
@@ -577,6 +614,9 @@ fi
 
 
 %changelog
+* Sat Feb 16 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
+- Add brocade and plumgrid packages.
+
 * Thu Feb 15 2013 Robert Kukura <rkukura@redhat.com> - 2013.1-0.3.g2
 - Update to grizzly milestone 2
 - Add quantum-db-manage, quantum-metadata-agent,
