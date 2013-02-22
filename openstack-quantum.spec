@@ -548,6 +548,7 @@ fi
 
 
 %files -n openstack-quantum-nicira
+%{_bindir}/quantum-check-nvp-config
 %doc LICENSE
 %doc quantum/plugins/nicira/nicira_nvp_plugin/README
 %{python_sitelib}/quantum/plugins/nicira
@@ -607,6 +608,9 @@ fi
 
 
 %changelog
+* Thu Feb 21 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
+- Add quantum-check-nvp-config to openstack-quantum-nicira.
+
 * Sat Feb 16 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
 - Add Brocade and Plumgrid packages.
 - Update files in Cisco package.
