@@ -1,0 +1,8 @@
+description "OpenStack Quantum Linux Bridge Agent"
+
+start on stopped rc RUNLEVEL=[2345]
+stop on runlevel [S016]
+
+respawn
+
+exec su -s /bin/sh -c "exec /usr/bin/quantum-linuxbridge-agent --log-file /var/log/quantum/linuxbridge-agent.log --config-file /etc/quantum/quantum.conf --config-file /etc/quantum/plugins/linuxbridge/linuxbridge_conf.ini" quantum

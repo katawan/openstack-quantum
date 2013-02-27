@@ -117,4 +117,7 @@ openstack-config --set ${L3_CONF} DEFAULT admin_tenant_name ${OS_TENANT_NAME}
 # Update interface driver
 openstack-config --set ${L3_CONF} DEFAULT interface_driver ${LINUX_INTERFACE_DRIVER}
 
+# disable namespaces until RHEL6 iproute supports it
+openstack-config --set ${L3_CONF} DEFAULT use_namespaces False
+
 echo "Configuration updates complete!"

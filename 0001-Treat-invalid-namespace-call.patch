@@ -1,0 +1,26 @@
+From 40bd5f9109b8053fd268b5a1942eba9036bd16b3 Mon Sep 17 00:00:00 2001
+From: Gary Kotton <gkotton@redhat.com>
+Date: Fri, 5 Oct 2012 06:07:13 -0400
+Subject: [PATCH] Treat invalid namespace call
+
+Fixes bug 1060559
+
+Change-Id: I29250100416b87f55781fb7e97339f6d3761513f
+---
+ quantum/agent/l3_agent.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/quantum/agent/l3_agent.py b/quantum/agent/l3_agent.py
+index 0630824..34b87c2 100644
+--- a/quantum/agent/l3_agent.py
++++ b/quantum/agent/l3_agent.py
+@@ -126,7 +126,8 @@ class L3NATAgent(object):
+             auth_region=self.conf.auth_region
+         )
+ 
+-        self._destroy_all_router_namespaces()
++        if self.conf.use_namespaces:
++            self._destroy_all_router_namespaces()
+ 
+     def _destroy_all_router_namespaces(self):
+         """Destroy all router namespaces on the host to eliminate

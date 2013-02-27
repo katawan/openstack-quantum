@@ -1,0 +1,8 @@
+description "OpenStack Quantum NEC OpenFlow Agent"
+
+start on stopped rc RUNLEVEL=[2345]
+stop on runlevel [S016]
+
+respawn
+
+exec su -s /bin/sh -c "exec /usr/bin/quantum-nec-agent --log-file /var/log/quantum/nec-agent.log --config-file /etc/quantum/quantum.conf --config-file /etc/quantum/plugins/nec/nec.ini" quantum

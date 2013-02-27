@@ -1,0 +1,8 @@
+description "OpenStack Quantum Layer 3 Agent"
+
+start on stopped rc RUNLEVEL=[2345]
+stop on runlevel [S016]
+
+respawn
+
+exec su -s /bin/sh -c "exec /usr/bin/quantum-l3-agent --log-file /var/log/quantum/l3-agent.log --config-file /etc/quantum/quantum.conf --config-file /etc/quantum/l3_agent.ini" quantum

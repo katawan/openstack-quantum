@@ -1,17 +1,17 @@
 #
-# This is 2013.1 grizzly milestone 2
+# This is 2012.2.1 folsom stable
 #
 
 Name:		openstack-quantum
-Version:	2013.1
-Release:	0.3.g2%{?dist}
+Version:	2012.2.1
+Release:	1%{?dist}
 Summary:	Virtual network service for OpenStack (quantum)
 
 Group:		Applications/System
 License:	ASL 2.0
 URL:		http://launchpad.net/quantum/
 
-Source0:	http://launchpad.net/quantum/grizzly/grizzly-2/+download/quantum-2013.1~g2.tar.gz
+Source0:	https://launchpad.net/quantum/folsom/%{version}/+download/quantum-%{version}.tar.gz
 Source1:	quantum.logrotate
 Source2:	quantum-sudoers
 Source4:	quantum-server-setup
@@ -19,33 +19,53 @@ Source5:	quantum-node-setup
 Source6:	quantum-dhcp-setup
 Source7:	quantum-l3-setup
 
-Source10:	quantum-server.service
-Source11:	quantum-linuxbridge-agent.service
-Source12:	quantum-openvswitch-agent.service
-Source13:	quantum-ryu-agent.service
-Source14:	quantum-nec-agent.service
-Source15:	quantum-dhcp-agent.service
-Source16:	quantum-l3-agent.service
-Source17:	quantum-metadata-agent.service
-Source18:	quantum-ovs-cleanup.service
+Source10:	quantum-server.init
+Source20:	quantum-server.upstart
+Source11:	quantum-linuxbridge-agent.init
+Source21:	quantum-linuxbridge-agent.upstart
+Source12:	quantum-openvswitch-agent.init
+Source22:	quantum-openvswitch-agent.upstart
+Source13:	quantum-ryu-agent.init
+Source23:	quantum-ryu-agent.upstart
+Source14:	quantum-nec-agent.init
+Source24:	quantum-nec-agent.upstart
+Source15:	quantum-dhcp-agent.init
+Source25:	quantum-dhcp-agent.upstart
+Source16:	quantum-l3-agent.init
+Source26:	quantum-l3-agent.upstart
+
+# This is EPEL specific and not upstream
+Patch100:         openstack-quantum-newdeps.patch
+
+#
+# patches_base=2012.2.1
+#
+
+# Upstream stable branch patch https://review.openstack.org/17236
+Patch1:		quantum.git-8017d0932c54078e7e18058e78f12c76d68462c7.patch
 
 BuildArch:	noarch
 
 BuildRequires:	python2-devel
 BuildRequires:	python-setuptools
-BuildRequires:	systemd-units
+# Build require these parallel versions
+# as setup.py build imports quantum.openstack.common.setup
+# which will then check for these
+BuildRequires:	python-sqlalchemy0.7
+BuildRequires:	python-webob1.0
+BuildRequires:	python-paste-deploy1.5
+BuildRequires:	python-routes1.12
+BuildRequires:	dos2unix
 
 Requires:	python-quantum = %{version}-%{release}
 Requires:	openstack-utils
+Requires:       python-keystone
 
-# dnsmasq is not a hard requirement, but is currently the only option
-# when quantum-dhcp-agent is deployed.
-Requires:	dnsmasq
-
-Requires(pre):	shadow-utils
-Requires(post): systemd-units
-Requires(preun): systemd-units
-Requires(postun): systemd-units
+Requires(post):   chkconfig
+Requires(postun): initscripts
+Requires(preun):  chkconfig
+Requires(preun):  initscripts
+Requires(pre):    shadow-utils
 
 
 %description
@@ -63,7 +83,6 @@ Summary:	Quantum Python libraries
 Group:		Applications/System
 
 Requires:	MySQL-python
-Requires:	python-alembic
 Requires:	python-amqplib
 Requires:	python-anyjson
 Requires:	python-eventlet
@@ -71,48 +90,21 @@ Requires:	python-greenlet
 Requires:	python-httplib2
 Requires:	python-iso8601
 Requires:	python-kombu
+Requires:	python-lxml
+Requires:	python-paste-deploy1.5
+Requires:	python-routes1.12
+Requires:	python-sqlalchemy0.7
+Requires:	python-webob1.0
 Requires:	python-netaddr
-Requires:	python-paste-deploy
 Requires:	python-qpid
-Requires:	python-quantumclient >= 1:2.1.10
-Requires:	python-routes
-Requires:	python-sqlalchemy
-Requires:	python-webob
+Requires:	python-quantumclient >= 1:2.1.1
 Requires:	sudo
-
-
 
 %description -n python-quantum
 Quantum provides an API to dynamically request and configure virtual
 networks.
 
 This package contains the quantum Python library.
-
-
-%package -n openstack-quantum-bigswitch
-Summary:	Quantum Big Switch plugin
-Group:		Applications/System
-
-Requires:	openstack-quantum = %{version}-%{release}
-
-
-%description -n openstack-quantum-bigswitch
-Quantum provides an API to dynamically request and configure virtual
-networks.
-
-This package contains the quantum plugin that implements virtual
-networks using the FloodLight Openflow Controller or the Big Switch
-Networks Controller.
-
-
-%package -n openstack-quantum-brocade
-Summary:        Quantum Brocade plugin
-Group:          Applications/System
-
-Requires:       openstack-quantum = %{version}-%{release}
-
-%description -n openstack-quantum-brocade
-This package contains the Quantum Brocade plugin.
 
 
 %package -n openstack-quantum-cisco
@@ -179,16 +171,6 @@ This package contains the quantum plugin that implements virtual
 networks using Open vSwitch.
 
 
-%package -n openstack-quantum-plumgrid
-Summary:        Quantum Plumgrid plugin
-Group:          Applications/System
-
-Requires:       openstack-quantum = %{version}-%{release}
-
-%description -n openstack-quantum-plumgrid
-This package contains the Quantum Brocade plugin.
-
-
 %package -n openstack-quantum-ryu
 Summary:	Quantum Ryu plugin
 Group:		Applications/System
@@ -237,6 +219,10 @@ networks using multiple other quantum plugins.
 %prep
 %setup -q -n quantum-%{version}
 
+%patch1 -p1
+# Apply EPEL patch
+%patch100 -p1
+
 find quantum -name \*.py -exec sed -i '/\/usr\/bin\/env python/d' {} \;
 
 chmod 644 quantum/plugins/cisco/README
@@ -266,22 +252,17 @@ rm -f %{buildroot}%{python_sitelib}/quantum/plugins/*/run_tests.*
 rm %{buildroot}/usr/etc/init.d/quantum-server
 
 # Install execs (using hand-coded rather than generated versions)
-install -p -D -m 755 bin/quantum-db-manage %{buildroot}%{_bindir}/quantum-db-manage
 install -p -D -m 755 bin/quantum-debug %{buildroot}%{_bindir}/quantum-debug
 install -p -D -m 755 bin/quantum-dhcp-agent %{buildroot}%{_bindir}/quantum-dhcp-agent
 install -p -D -m 755 bin/quantum-dhcp-agent-dnsmasq-lease-update %{buildroot}%{_bindir}/quantum-dhcp-agent-dnsmasq-lease-update
 install -p -D -m 755 bin/quantum-l3-agent %{buildroot}%{_bindir}/quantum-l3-agent
 install -p -D -m 755 bin/quantum-linuxbridge-agent %{buildroot}%{_bindir}/quantum-linuxbridge-agent
-install -p -D -m 755 bin/quantum-metadata-agent %{buildroot}%{_bindir}/quantum-metadata-agent
 install -p -D -m 755 bin/quantum-nec-agent %{buildroot}%{_bindir}/quantum-nec-agent
 install -p -D -m 755 bin/quantum-netns-cleanup %{buildroot}%{_bindir}/quantum-netns-cleanup
-install -p -D -m 755 bin/quantum-ns-metadata-proxy %{buildroot}%{_bindir}/quantum-ns-metadata-proxy
 install -p -D -m 755 bin/quantum-openvswitch-agent %{buildroot}%{_bindir}/quantum-openvswitch-agent
-install -p -D -m 755 bin/quantum-ovs-cleanup %{buildroot}%{_bindir}/quantum-ovs-cleanup
 install -p -D -m 755 bin/quantum-rootwrap %{buildroot}%{_bindir}/quantum-rootwrap
 install -p -D -m 755 bin/quantum-ryu-agent %{buildroot}%{_bindir}/quantum-ryu-agent
 install -p -D -m 755 bin/quantum-server %{buildroot}%{_bindir}/quantum-server
-install -p -D -m 755 bin/quantum-usage-audit %{buildroot}%{_bindir}/quantum-usage-audit
 
 # Move rootwrap files to proper location
 install -d -m 755 %{buildroot}%{_datarootdir}/quantum/rootwrap
@@ -291,12 +272,6 @@ mv %{buildroot}/usr/etc/quantum/rootwrap.d/*.filters %{buildroot}%{_datarootdir}
 install -d -m 755 %{buildroot}%{_sysconfdir}/quantum
 mv %{buildroot}/usr/etc/quantum/* %{buildroot}%{_sysconfdir}/quantum
 chmod 640  %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini
-
-# remove hyperv plugin ini file
-rm -f %{buildroot}%{_sysconfdir}/quantum/plugins/hyperv/hyperv_quantum_plugin.ini
-
-# Install bigswitch plugin conf file missing from setup.py
-install -p -D -m 640 etc/quantum/plugins/bigswitch/restproxy.ini %{buildroot}%{_sysconfdir}/quantum/plugins/bigswitch/restproxy.ini
 
 # Configure agents to use quantum-rootwrap
 for f in %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini %{buildroot}%{_sysconfdir}/quantum/*_agent.ini; do
@@ -312,20 +287,20 @@ install -p -D -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/logrotate.d/openstack
 # Install sudoers
 install -p -D -m 440 %{SOURCE2} %{buildroot}%{_sysconfdir}/sudoers.d/quantum
 
-# Install systemd units
-install -p -D -m 644 %{SOURCE10} %{buildroot}%{_unitdir}/quantum-server.service
-install -p -D -m 644 %{SOURCE11} %{buildroot}%{_unitdir}/quantum-linuxbridge-agent.service
-install -p -D -m 644 %{SOURCE12} %{buildroot}%{_unitdir}/quantum-openvswitch-agent.service
-install -p -D -m 644 %{SOURCE13} %{buildroot}%{_unitdir}/quantum-ryu-agent.service
-install -p -D -m 644 %{SOURCE14} %{buildroot}%{_unitdir}/quantum-nec-agent.service
-install -p -D -m 644 %{SOURCE15} %{buildroot}%{_unitdir}/quantum-dhcp-agent.service
-install -p -D -m 644 %{SOURCE16} %{buildroot}%{_unitdir}/quantum-l3-agent.service
-install -p -D -m 644 %{SOURCE17} %{buildroot}%{_unitdir}/quantum-metadata-agent.service
-install -p -D -m 644 %{SOURCE18} %{buildroot}%{_unitdir}/quantum-ovs-cleanup.service
+# Install sysv init scripts
+install -p -D -m 755 %{SOURCE10} %{buildroot}%{_initrddir}/quantum-server
+install -p -D -m 755 %{SOURCE11} %{buildroot}%{_initrddir}/quantum-linuxbridge-agent
+install -p -D -m 755 %{SOURCE12} %{buildroot}%{_initrddir}/quantum-openvswitch-agent
+install -p -D -m 755 %{SOURCE13} %{buildroot}%{_initrddir}/quantum-ryu-agent
+install -p -D -m 755 %{SOURCE14} %{buildroot}%{_initrddir}/quantum-nec-agent
+install -p -D -m 755 %{SOURCE15} %{buildroot}%{_initrddir}/quantum-dhcp-agent
+install -p -D -m 755 %{SOURCE16} %{buildroot}%{_initrddir}/quantum-l3-agent
 
 # Setup directories
+install -d -m 755 %{buildroot}%{_datadir}/quantum
 install -d -m 755 %{buildroot}%{_sharedstatedir}/quantum
 install -d -m 755 %{buildroot}%{_localstatedir}/log/quantum
+install -d -m 755 %{buildroot}%{_localstatedir}/run/quantum
 
 # Install setup helper scripts
 install -p -D -m 755 %{SOURCE4} %{buildroot}%{_bindir}/quantum-server-setup
@@ -333,13 +308,14 @@ install -p -D -m 755 %{SOURCE5} %{buildroot}%{_bindir}/quantum-node-setup
 install -p -D -m 755 %{SOURCE6} %{buildroot}%{_bindir}/quantum-dhcp-setup
 install -p -D -m 755 %{SOURCE7} %{buildroot}%{_bindir}/quantum-l3-setup
 
-# Install version info file
-cat > %{buildroot}%{_sysconfdir}/quantum/release <<EOF
-[Quantum]
-vendor = Fedora Project
-product = OpenStack Quantum
-package = %{release}
-EOF
+# Install upstart jobs examples
+install -p -m 644 %{SOURCE20} %{buildroot}%{_datadir}/quantum/
+install -p -m 644 %{SOURCE21} %{buildroot}%{_datadir}/quantum/
+install -p -m 644 %{SOURCE22} %{buildroot}%{_datadir}/quantum/
+install -p -m 644 %{SOURCE23} %{buildroot}%{_datadir}/quantum/
+install -p -m 644 %{SOURCE24} %{buildroot}%{_datadir}/quantum/
+install -p -m 644 %{SOURCE25} %{buildroot}%{_datadir}/quantum/
+install -p -m 644 %{SOURCE26} %{buildroot}%{_datadir}/quantum/
 
 %pre
 getent group quantum >/dev/null || groupadd -r quantum --gid 164
@@ -352,88 +328,92 @@ exit 0
 %post
 if [ $1 -eq 1 ] ; then
     # Initial installation
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+    /sbin/chkconfig --add quantum-server
 fi
-
 
 %preun
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable quantum-server.service > /dev/null 2>&1 || :
-    /bin/systemctl stop quantum-server.service > /dev/null 2>&1 || :
-    /bin/systemctl --no-reload disable quantum-dhcp-agent.service > /dev/null 2>&1 || :
-    /bin/systemctl stop quantum-dhcp-agent.service > /dev/null 2>&1 || :
-    /bin/systemctl --no-reload disable quantum-l3-agent.service > /dev/null 2>&1 || :
-    /bin/systemctl stop quantum-l3-agent.service > /dev/null 2>&1 || :
-    /bin/systemctl --no-reload disable quantum-metadata-agent.service > /dev/null 2>&1 || :
-    /bin/systemctl stop quantum-metadata-agent.service > /dev/null 2>&1 || :
+    /sbin/service quantum-server stop >/dev/null 2>&1
+    /sbin/chkconfig --del quantum-server
+    /sbin/service quantum-dhcp-agent stop >/dev/null 2>&1
+    /sbin/chkconfig --del quantum-dhcp-agent
+    /sbin/service quantum-l3-agent stop >/dev/null 2>&1
+    /sbin/chkconfig --del quantum-l3-agent
 fi
-
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart quantum-server.service >/dev/null 2>&1 || :
-    /bin/systemctl try-restart quantum-dhcp-agent.service >/dev/null 2>&1 || :
-    /bin/systemctl try-restart quantum-l3-agent.service >/dev/null 2>&1 || :
-    /bin/systemctl try-restart quantum-metadata-agent.service >/dev/null 2>&1 || :
+    /sbin/service quantum-server condrestart >/dev/null 2>&1 || :
 fi
 
+
+%post -n openstack-quantum-linuxbridge
+if [ $1 -eq 1 ] ; then
+    # Initial installation
+    /sbin/chkconfig --add quantum-linuxbridge-agent
+fi
 
 %preun -n openstack-quantum-linuxbridge
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable quantum-linuxbridge-agent.service > /dev/null 2>&1 || :
-    /bin/systemctl stop quantum-linuxbridge-agent.service > /dev/null 2>&1 || :
+    /sbin/service quantum-linuxbridge-agent stop >/dev/null 2>&1
+    /sbin/chkconfig --del quantum-linuxbridge-agent
 fi
-
 
 %postun -n openstack-quantum-linuxbridge
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart quantum-linuxbridge-agent.service >/dev/null 2>&1 || :
+    /sbin/service quantum-linuxbridge-agent condrestart >/dev/null 2>&1 || :
 fi
 
+
+%post -n openstack-quantum-openvswitch
+if [ $1 -eq 1 ] ; then
+    # Initial installation
+    /sbin/chkconfig --add quantum-openvswitch-agent
+fi
 
 %preun -n openstack-quantum-openvswitch
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable quantum-openvswitch-agent.service > /dev/null 2>&1 || :
-    /bin/systemctl stop quantum-openvswitch-agent.service > /dev/null 2>&1 || :
+    /sbin/service quantum-openvswitch-agent stop >/dev/null 2>&1
+    /sbin/chkconfig --del quantum-openvswitch-agent
 fi
-
 
 %postun -n openstack-quantum-openvswitch
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart quantum-openvswitch-agent.service >/dev/null 2>&1 || :
+    /sbin/service quantum-openvswitch-agent condrestart >/dev/null 2>&1 || :
 fi
 
+
+%post -n openstack-quantum-ryu
+if [ $1 -eq 1 ] ; then
+    # Initial installation
+    /sbin/chkconfig --add quantum-ryu-agent
+fi
 
 %preun -n openstack-quantum-ryu
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable quantum-ryu-agent.service > /dev/null 2>&1 || :
-    /bin/systemctl stop quantum-ryu-agent.service > /dev/null 2>&1 || :
+    /sbin/service quantum-ryu-agent stop >/dev/null 2>&1
+    /sbin/chkconfig --del quantum-ryu-agent
 fi
 
-
 %postun -n openstack-quantum-ryu
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart quantum-ryu-agent.service >/dev/null 2>&1 || :
+    /sbin/service quantum-ryu-agent condrestart >/dev/null 2>&1 || :
 fi
 
 
 %preun -n openstack-quantum-nec
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable quantum-nec-agent.service > /dev/null 2>&1 || :
-    /bin/systemctl stop quantum-nec-agent.service > /dev/null 2>&1 || :
+    /sbin/service quantum-nec-agent stop >/dev/null 2>&1
+    /sbin/chkconfig --del quantum-nec-agent
 fi
 
 
@@ -441,39 +421,36 @@ fi
 /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart quantum-nec-agent.service >/dev/null 2>&1 || :
+    /sbin/service quantum-nec-agent condrestart >/dev/null 2>&1 || :
 fi
 
 
 %files
 %doc LICENSE
 %doc README
-%{_bindir}/quantum-db-manage
 %{_bindir}/quantum-debug
 %{_bindir}/quantum-dhcp-agent
 %{_bindir}/quantum-dhcp-agent-dnsmasq-lease-update
 %{_bindir}/quantum-dhcp-setup
 %{_bindir}/quantum-l3-agent
 %{_bindir}/quantum-l3-setup
-%{_bindir}/quantum-metadata-agent
 %{_bindir}/quantum-netns-cleanup
 %{_bindir}/quantum-node-setup
-%{_bindir}/quantum-ns-metadata-proxy
 %{_bindir}/quantum-rootwrap
 %{_bindir}/quantum-server
 %{_bindir}/quantum-server-setup
-%{_bindir}/quantum-usage-audit
-%{_unitdir}/quantum-dhcp-agent.service
-%{_unitdir}/quantum-l3-agent.service
-%{_unitdir}/quantum-metadata-agent.service
-%{_unitdir}/quantum-server.service
+%{_initrddir}/quantum-server
+%{_initrddir}/quantum-dhcp-agent
+%{_initrddir}/quantum-l3-agent
+%dir %{_datadir}/quantum
+%{_datadir}/quantum/quantum-server.upstart
+%{_datadir}/quantum/quantum-dhcp-agent.upstart
+%{_datadir}/quantum/quantum-l3-agent.upstart
 %dir %{_sysconfdir}/quantum
-%{_sysconfdir}/quantum/release
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/api-paste.ini
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/dhcp_agent.ini
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/l3_agent.ini
-%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/metadata_agent.ini
-%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/policy.json
+%config(noreplace) %{_sysconfdir}/quantum/policy.json
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/quantum.conf
 %config(noreplace) %{_sysconfdir}/quantum/rootwrap.conf
 %dir %{_sysconfdir}/quantum/plugins
@@ -481,7 +458,7 @@ fi
 %config(noreplace) %{_sysconfdir}/sudoers.d/quantum
 %dir %attr(0755, quantum, quantum) %{_sharedstatedir}/quantum
 %dir %attr(0755, quantum, quantum) %{_localstatedir}/log/quantum
-%dir %{_datarootdir}/quantum
+%dir %attr(0755, quantum, quantum) %{_localstatedir}/run/quantum
 %dir %{_datarootdir}/quantum/rootwrap
 %{_datarootdir}/quantum/rootwrap/dhcp.filters
 %{_datarootdir}/quantum/rootwrap/iptables-firewall.filters
@@ -493,42 +470,34 @@ fi
 %doc README
 %{python_sitelib}/quantum
 %exclude %{python_sitelib}/quantum/extensions/_credential_view.py*
+%exclude %{python_sitelib}/quantum/extensions/portprofile.py*
+%exclude %{python_sitelib}/quantum/extensions/novatenant.py*
 %exclude %{python_sitelib}/quantum/extensions/credential.py*
+%exclude %{python_sitelib}/quantum/extensions/_novatenant_view.py*
+%exclude %{python_sitelib}/quantum/extensions/multiport.py*
+%exclude %{python_sitelib}/quantum/extensions/_pprofiles.py*
 %exclude %{python_sitelib}/quantum/extensions/qos.py*
 %exclude %{python_sitelib}/quantum/extensions/_qos_view.py*
-%exclude %{python_sitelib}/quantum/plugins/bigswitch
-%exclude %{python_sitelib}/quantum/plugins/brocade
 %exclude %{python_sitelib}/quantum/plugins/cisco
 %exclude %{python_sitelib}/quantum/plugins/linuxbridge
 %exclude %{python_sitelib}/quantum/plugins/metaplugin
 %exclude %{python_sitelib}/quantum/plugins/nec
 %exclude %{python_sitelib}/quantum/plugins/nicira
 %exclude %{python_sitelib}/quantum/plugins/openvswitch
-%exclude %{python_sitelib}/quantum/plugins/plumgrid
 %exclude %{python_sitelib}/quantum/plugins/ryu
 %{python_sitelib}/quantum-%%{version}-*.egg-info
-
-
-%files -n openstack-quantum-bigswitch
-%doc LICENSE
-%doc quantum/plugins/bigswitch/README
-%{python_sitelib}/quantum/plugins/bigswitch
-%dir %{_sysconfdir}/quantum/plugins/bigswitch
-%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/bigswitch/*.ini
-
-
-%files -n openstack-quantum-brocade
-%doc LICENSE
-%{python_sitelib}/quantum/plugins/brocade
-%dir %{_sysconfdir}/quantum/plugins/brocade
-%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/brocade/*.ini
 
 
 %files -n openstack-quantum-cisco
 %doc LICENSE
 %doc quantum/plugins/cisco/README
 %{python_sitelib}/quantum/extensions/_credential_view.py*
+%{python_sitelib}/quantum/extensions/portprofile.py*
+%{python_sitelib}/quantum/extensions/novatenant.py*
 %{python_sitelib}/quantum/extensions/credential.py*
+%{python_sitelib}/quantum/extensions/_novatenant_view.py*
+%{python_sitelib}/quantum/extensions/multiport.py*
+%{python_sitelib}/quantum/extensions/_pprofiles.py*
 %{python_sitelib}/quantum/extensions/qos.py*
 %{python_sitelib}/quantum/extensions/_qos_view.py*
 %{python_sitelib}/quantum/plugins/cisco
@@ -540,7 +509,8 @@ fi
 %doc LICENSE
 %doc quantum/plugins/linuxbridge/README
 %{_bindir}/quantum-linuxbridge-agent
-%{_unitdir}/quantum-linuxbridge-agent.service
+%{_initrddir}/quantum-linuxbridge-agent
+%{_datadir}/quantum/quantum-linuxbridge-agent.upstart
 %{python_sitelib}/quantum/plugins/linuxbridge
 %{_datarootdir}/quantum/rootwrap/linuxbridge-plugin.filters
 %dir %{_sysconfdir}/quantum/plugins/linuxbridge
@@ -548,7 +518,6 @@ fi
 
 
 %files -n openstack-quantum-nicira
-%{_bindir}/quantum-check-nvp-config
 %doc LICENSE
 %doc quantum/plugins/nicira/nicira_nvp_plugin/README
 %{python_sitelib}/quantum/plugins/nicira
@@ -560,28 +529,20 @@ fi
 %doc LICENSE
 %doc quantum/plugins/openvswitch/README
 %{_bindir}/quantum-openvswitch-agent
-%{_bindir}/quantum-ovs-cleanup
-%{_unitdir}/quantum-openvswitch-agent.service
-%{_unitdir}/quantum-ovs-cleanup.service
+%{_initrddir}/quantum-openvswitch-agent
+%{_datadir}/quantum/quantum-openvswitch-agent.upstart
 %{python_sitelib}/quantum/plugins/openvswitch
 %{_datarootdir}/quantum/rootwrap/openvswitch-plugin.filters
 %dir %{_sysconfdir}/quantum/plugins/openvswitch
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/openvswitch/*.ini
 
 
-%files -n openstack-quantum-plumgrid
-%doc LICENSE
-%doc quantum/plugins/plumgrid/README
-%{python_sitelib}/quantum/plugins/plumgrid
-%dir %{_sysconfdir}/quantum/plugins/plumgrid
-%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/plumgrid/*.ini
-
-
 %files -n openstack-quantum-ryu
 %doc LICENSE
 %doc quantum/plugins/ryu/README
 %{_bindir}/quantum-ryu-agent
-%{_unitdir}/quantum-ryu-agent.service
+%{_initrddir}/quantum-ryu-agent
+%{_datadir}/quantum/quantum-ryu-agent.upstart
 %{python_sitelib}/quantum/plugins/ryu
 %{_datarootdir}/quantum/rootwrap/ryu-plugin.filters
 %dir %{_sysconfdir}/quantum/plugins/ryu
@@ -592,7 +553,8 @@ fi
 %doc LICENSE
 %doc quantum/plugins/nec/README
 %{_bindir}/quantum-nec-agent
-%{_unitdir}/quantum-nec-agent.service
+%{_initrddir}/quantum-nec-agent
+%{_datadir}/quantum/quantum-nec-agent.upstart
 %{python_sitelib}/quantum/plugins/nec
 %{_datarootdir}/quantum/rootwrap/nec-plugin.filters
 %dir %{_sysconfdir}/quantum/plugins/nec
@@ -608,139 +570,38 @@ fi
 
 
 %changelog
-* Thu Feb 21 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
-- Add quantum-check-nvp-config to openstack-quantum-nicira.
-
-* Sat Feb 16 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
-- Add Brocade and Plumgrid packages.
-- Update files in Cisco package.
-- Remove hyperv quantum plugin.
-
-* Thu Feb 15 2013 Robert Kukura <rkukura@redhat.com> - 2013.1-0.3.g2
-- Update to grizzly milestone 2
-- Add quantum-db-manage, quantum-metadata-agent,
-  quantum-ns-metadata-proxy, quantum-ovs-cleanup, and
-  quantum-usage-audit executables
-- Add systemd units for quantum-metadata-agent and quantum-ovs-cleanup
-- Fix /etc/quantum/policy.json permissions (bug 877600)
-- Require dnsmasq (bug 890041)
-- Add the version info file
-- Remove python-lxml dependency
-- Add python-alembic dependency
-
-* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2013.1-0.2.g1
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
-
-* Wed Dec  5 2012 Robert Kukura <rkukura@redhat.com> - 2013.1-0.1.g1
-- Update to grizzly milestone 1
-- Require python-quantumclient >= 1:2.1.10
-- Remove unneeded rpc control_exchange patch
-- Add bigswitch plugin as sub-package
-- Work around bigswitch conf file missing from setup.py
+* Wed Jan 23 2013 Martin Magr <mmagr@redhat.com> - 2012.2.1-1
+- Added python-keystone requirement
 
 * Mon Dec  3 2012 Robert Kukura <rkukura@redhat.com> - 2012.2.1-1
 - Update to folsom stable 2012.2.1
-- Turn off PrivateTmp for dhcp_agent and l3_agent (bug 872689)
 - Add upstream patch: Fix rpc control_exchange regression.
 - Remove workaround for missing l3_agent.ini
+
+* Thu Nov 01 2012 Alan Pevec <apevec@redhat.com> 2012.2-2
+- l3_agent not disabling namespace use lp#1060559
 
 * Fri Sep 28 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-1
 - Update to folsom final
 - Require python-quantumclient >= 1:2.1.1
 
-* Sun Sep 23 2012 Gary Kotton <gkotton@redhat.com> - 2012.2-0.9.rc2
-- Update to folsom rc2
+* Tue Aug 21 2012 Robert Kukura <rkukura@redhat.com> - 2012.1-8
+- fix database config generated by install scripts (#847785)
 
-* Sun Sep 16 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-0.9.rc1
-- Fix setting admin_user in quantum_l3_setup
+* Wed Jul 25 2012 Robert Kukura <rkukura@redhat.com> - 2012.1-6
+- Update to 20120715 essex stable branch snapshot
 
-* Fri Sep 14 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-0.8.rc1
-- Setup script fixes from garyk
-- Fix openvswitch service config file path
-- Make log file names consistent with service names
-
-* Thu Sep 13 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-0.7.rc1
-- Fix various issues in setup scripts
-- Configure quantum-dhcp-agent to store files under /var/lib/quantum
-- Make config files with passwords world-unreadable
-- Replace bug workarounds with upstream patches
-
-* Wed Sep 12 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-0.6.rc1
-- Require python-quantumclient >= 2.0.22
-- Add bug references for work-arounds
-- Use /usr/share/quantum/rootwrap instead of /usr/share/quantum/filters
-
-* Wed Sep 12 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-0.5.rc1
-- Update to folsom rc1
-- Fix command lines in agent systemd units
-- Fix setup scripts
-- Fix configuration of agents to use quantum-rootwrap
-- Set "debug = False" and "auth_strategy = noauth" in quantum.conf
-- Symlink /etc/quantum/plugin.ini to plugin's config file
-- Add "--config-file /etc/quantum/plugin.ini" to ExecStart in quantum-server.service
-
-* Tue Sep 11 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-0.4.rc1.20120911.1224
-- Update to folsom rc1 snapshot
-- Add support for new agents, plugins and rootwrap
-
-* Wed Aug 22 2012 Pádraig Brady <P@draigBrady.com> - 2012.2-0.3.f2
-- Fix helper scripts to setup the database config correctly (#847785)
-
-* Tue Aug  7 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-0.2.f2
-- Include quantum module no longer provided by python-quantumclient
-- Update description text
-- Disable setuptools_git dependency
-
-* Tue Aug  7 2012 Robert Kukura <rkukura@redhat.com> - 2012.2-0.1.f2
-- Update to folsom milestone 2
-
-* Fri Jul 20 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2012.1-3
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
-
-* Mon May 28 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-2
+* Mon May 28 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-5
 - Fix helper scripts to use the always available openstack-config util
 
-* Mon Apr  9 2012 Robert Kukura <rkukura@redhat.com> - 2012.1-1
-- Update to essex release
+* Mon May 07 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-4
+- Fix handling of the mysql service in quantum-server-setup
 
-* Thu Apr  5 2012 Robert Kukura <rkukura@redhat.com> - 2012.1-0.7.rc2
-- Update to essex rc2 milestone
-- Use PrivateTmp for services
+* Tue May 01 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-3
+- Start the services later in the boot sequence
 
-* Wed Mar 21 2012 Robert Kukura <rkukura@redhat.com> - 2012.1-0.6.rc1
-- Update to official essex rc1 milestone
-- Add quantum-server-setup and quantum-node-setup scripts
-- Use hand-coded agent executables rather than easy-install scripts
-- Make plugin config files mode 640 and group quantum to protect passwords
+* Wed Apr 25 2012 Pádraig Brady <P@draigBrady.com> - 2012.1-2
+- Use parallel installed versions of python-routes and python-paste-deploy
 
-* Mon Mar 19 2012 Robert Kukura <rkukura@redhat.com> - 2012.1-0.5.e4
-- Update to essex possible RC1 tarball
-- Remove patches incorporated upstream
-- Don't package test code
-- Remove dependencies only needed by test code
-
-* Wed Mar 14 2012 Robert Kukura <rkukura@redhat.com> - 2012.1-0.4.e4
-- Upstream patch: add root_helper to quantum agents
-- Add sudoers file enabling quantum-rootwrap for quantum user
-- Configure plugin agents to use quantum-rootwrap
-- Run plugin agents as quantum user
-
-* Fri Mar  9 2012 Robert Kukura <rkukura@redhat.com> - 2012.1-0.3.e4
-- Add upstream patch: remove pep8 and strict lxml version from setup.py
-- Remove old fix for pep8 dependency
-- Add upstream patch: Bug #949261 Removing nova drivers for Linux Bridge Plugin
-- Add openvswitch dependency
-
-* Mon Mar  5 2012 Robert Kukura <rkukura@redhat.com> - 2012.1-0.2.e4
-- Update to essex milestone 4
-- Move plugins to sub-packages
-- Systemd units for agents
-
-* Mon Jan 31 2012 Robert Kukura <rkukura@redhat.com> - 2012.1-0.1.e3
-- Update to essex milestone 3 for F17
-
-* Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2011.3-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
-
-* Thu Nov  18 2011 Robert Kukura <rkukura@redhat.com> - 2011.3-1
-- Initial package for Fedora
+* Thu Apr 12 2012 Pádraig Brady <pbrady@redhat.com> - 2012.1-1
+- Initial essex release
