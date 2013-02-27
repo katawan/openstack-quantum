@@ -274,6 +274,11 @@ cp -pr %{buildroot}/usr/etc/quantum/* %{buildroot}%{_sysconfdir}/quantum
 rm -fr %{buildroot}/usr/etc/quantum/*
 chmod 640  %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini
 
+# remove unpackaged plugin ini files
+for i in "bigswitch" "brocade" "hyperv" "midonet" "plumgrid" ; do
+    rm -fr %{buildroot}%{_sysconfdir}/quantum/plugins/${i}
+done
+
 # Configure agents to use quantum-rootwrap
 for f in %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini %{buildroot}%{_sysconfdir}/quantum/*_agent.ini; do
     sed -i 's/^root_helper.*/root_helper = sudo quantum-rootwrap \/etc\/quantum\/rootwrap.conf/g' $f
