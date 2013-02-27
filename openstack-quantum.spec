@@ -219,7 +219,7 @@ networks using multiple other quantum plugins.
 %prep
 %setup -q -n quantum-%{version}
 
-%patch1 -p1
+#%patch1 -p1
 # Apply EPEL patch
 %patch100 -p1
 
@@ -270,7 +270,8 @@ mv %{buildroot}/usr/etc/quantum/rootwrap.d/*.filters %{buildroot}%{_datarootdir}
 
 # Move config files to proper location
 install -d -m 755 %{buildroot}%{_sysconfdir}/quantum
-mv %{buildroot}/usr/etc/quantum/* %{buildroot}%{_sysconfdir}/quantum
+cp -pr %{buildroot}/usr/etc/quantum/* %{buildroot}%{_sysconfdir}/quantum
+rm -fr %{buildroot}/usr/etc/quantum/*
 chmod 640  %{buildroot}%{_sysconfdir}/quantum/plugins/*/*.ini
 
 # Configure agents to use quantum-rootwrap
@@ -439,6 +440,11 @@ fi
 %{_bindir}/quantum-rootwrap
 %{_bindir}/quantum-server
 %{_bindir}/quantum-server-setup
+%{_bindir}/quantum-check-nvp-config
+%{_bindir}/quantum-db-manage
+%{_bindir}/quantum-metadata-agent
+%{_bindir}/quantum-ns-metadata-proxy
+%{_bindir}/quantum-ovs-cleanup
 %{_initrddir}/quantum-server
 %{_initrddir}/quantum-dhcp-agent
 %{_initrddir}/quantum-l3-agent
@@ -447,6 +453,7 @@ fi
 %{_datadir}/quantum/quantum-dhcp-agent.upstart
 %{_datadir}/quantum/quantum-l3-agent.upstart
 %dir %{_sysconfdir}/quantum
+%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/metadata_agent.ini
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/api-paste.ini
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/dhcp_agent.ini
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/l3_agent.ini
@@ -470,12 +477,12 @@ fi
 %doc README
 %{python_sitelib}/quantum
 %exclude %{python_sitelib}/quantum/extensions/_credential_view.py*
-%exclude %{python_sitelib}/quantum/extensions/portprofile.py*
-%exclude %{python_sitelib}/quantum/extensions/novatenant.py*
+#%exclude %{python_sitelib}/quantum/extensions/portprofile.py*
+#%exclude %{python_sitelib}/quantum/extensions/novatenant.py*
 %exclude %{python_sitelib}/quantum/extensions/credential.py*
-%exclude %{python_sitelib}/quantum/extensions/_novatenant_view.py*
-%exclude %{python_sitelib}/quantum/extensions/multiport.py*
-%exclude %{python_sitelib}/quantum/extensions/_pprofiles.py*
+#%exclude %{python_sitelib}/quantum/extensions/_novatenant_view.py*
+#%exclude %{python_sitelib}/quantum/extensions/multiport.py*
+#%exclude %{python_sitelib}/quantum/extensions/_pprofiles.py*
 %exclude %{python_sitelib}/quantum/extensions/qos.py*
 %exclude %{python_sitelib}/quantum/extensions/_qos_view.py*
 %exclude %{python_sitelib}/quantum/plugins/cisco
@@ -492,12 +499,12 @@ fi
 %doc LICENSE
 %doc quantum/plugins/cisco/README
 %{python_sitelib}/quantum/extensions/_credential_view.py*
-%{python_sitelib}/quantum/extensions/portprofile.py*
-%{python_sitelib}/quantum/extensions/novatenant.py*
+#%{python_sitelib}/quantum/extensions/portprofile.py*
+#%{python_sitelib}/quantum/extensions/novatenant.py*
 %{python_sitelib}/quantum/extensions/credential.py*
-%{python_sitelib}/quantum/extensions/_novatenant_view.py*
-%{python_sitelib}/quantum/extensions/multiport.py*
-%{python_sitelib}/quantum/extensions/_pprofiles.py*
+#%{python_sitelib}/quantum/extensions/_novatenant_view.py*
+#%{python_sitelib}/quantum/extensions/multiport.py*
+#%{python_sitelib}/quantum/extensions/_pprofiles.py*
 %{python_sitelib}/quantum/extensions/qos.py*
 %{python_sitelib}/quantum/extensions/_qos_view.py*
 %{python_sitelib}/quantum/plugins/cisco
