@@ -148,6 +148,16 @@ This package contains the quantum plugin that implements virtual
 networks as VLANs using Linux bridging.
 
 
+%package -n openstack-quantum-midonet
+Summary:        Quantum Midonet plugin
+Group:          Applications/System
+
+Requires:       openstack-quantum = %{version}-%{release}
+
+%description -n openstack-quantum-midonet
+This package contains the Quantum Midonet plugin.
+
+
 %package -n openstack-quantum-nicira
 Summary:	Quantum Nicira plugin
 Group:		Applications/System
@@ -501,6 +511,7 @@ fi
 %exclude %{python_sitelib}/quantum/plugins/cisco
 %exclude %{python_sitelib}/quantum/plugins/linuxbridge
 %exclude %{python_sitelib}/quantum/plugins/metaplugin
+%exclude %{python_sitelib}/quantum/plugins/midonet
 %exclude %{python_sitelib}/quantum/plugins/nec
 %exclude %{python_sitelib}/quantum/plugins/nicira
 %exclude %{python_sitelib}/quantum/plugins/openvswitch
@@ -545,6 +556,13 @@ fi
 %{_datarootdir}/quantum/rootwrap/linuxbridge-plugin.filters
 %dir %{_sysconfdir}/quantum/plugins/linuxbridge
 %config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/linuxbridge/*.ini
+
+
+%files -n openstack-quantum-midonet
+%doc LICENSE
+%{python_sitelib}/quantum/plugins/midonet
+%dir %{_sysconfdir}/quantum/plugins/midonet
+%config(noreplace) %attr(0640, root, quantum) %{_sysconfdir}/quantum/plugins/midonet/*.ini
 
 
 %files -n openstack-quantum-nicira
@@ -608,6 +626,9 @@ fi
 
 
 %changelog
+* Wed Feb 27 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
+- Add new midonet package.
+
 * Thu Feb 21 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
 - Add quantum-check-nvp-config to openstack-quantum-nicira.
 
