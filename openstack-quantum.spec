@@ -280,6 +280,7 @@ install -p -D -m 755 bin/quantum-db-manage %{buildroot}%{_bindir}/quantum-db-man
 install -p -D -m 755 bin/quantum-debug %{buildroot}%{_bindir}/quantum-debug
 install -p -D -m 755 bin/quantum-dhcp-agent %{buildroot}%{_bindir}/quantum-dhcp-agent
 install -p -D -m 755 bin/quantum-dhcp-agent-dnsmasq-lease-update %{buildroot}%{_bindir}/quantum-dhcp-agent-dnsmasq-lease-update
+install -p -D -m 755 bin/quantum-lbaas-agent %{buildroot}%{_bindir}/quantum-lbaas-agent
 install -p -D -m 755 bin/quantum-l3-agent %{buildroot}%{_bindir}/quantum-l3-agent
 install -p -D -m 755 bin/quantum-linuxbridge-agent %{buildroot}%{_bindir}/quantum-linuxbridge-agent
 install -p -D -m 755 bin/quantum-metadata-agent %{buildroot}%{_bindir}/quantum-metadata-agent
@@ -463,6 +464,7 @@ fi
 %{_bindir}/quantum-dhcp-agent
 %{_bindir}/quantum-dhcp-agent-dnsmasq-lease-update
 %{_bindir}/quantum-dhcp-setup
+%{_bindir}/quantum-lbaas-agent
 %{_bindir}/quantum-l3-agent
 %{_bindir}/quantum-l3-setup
 %{_bindir}/quantum-metadata-agent
@@ -626,6 +628,9 @@ fi
 
 
 %changelog
+* Thu Feb 28 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
+- Add new quantum-lbaas-agent bin.
+
 * Wed Feb 27 2013 Dan Prince <dprince@redhat.com> - 2013.1-0.3.g2
 - Add new midonet package.
 
