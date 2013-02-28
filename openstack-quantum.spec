@@ -250,6 +250,7 @@ rm -rf %{buildroot}%{python_sitelib}/quantum/tests
 rm -rf %{buildroot}%{python_sitelib}/quantum/plugins/*/tests
 rm -f %{buildroot}%{python_sitelib}/quantum/plugins/*/run_tests.*
 rm %{buildroot}/usr/etc/init.d/quantum-server
+rm %{buildroot}%{_bindir}/quantum-lbaas-agent
 
 # Install execs (using hand-coded rather than generated versions)
 install -p -D -m 755 bin/quantum-debug %{buildroot}%{_bindir}/quantum-debug
